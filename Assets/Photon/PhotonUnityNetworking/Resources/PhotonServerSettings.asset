@@ -43,6 +43,12 @@ MonoBehaviour:
   - SetPlayerNameRPC
   - StartBall
   - ResetBall
+  - FixedUpdate
+  - InitializeScores
+  - UpdateScoreTexts
+  - SyncPlayerNamesRPC
+  - ShowScore
+  - UpdateScoreUI
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

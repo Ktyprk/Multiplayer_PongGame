@@ -2,19 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 using TMPro;
 
-public class Ball : MonoBehaviour
+public class Ball : MonoBehaviourPun
 {
     public Transform startPos;
-    private int player1Score = 0;
-    private int player2Score = 0;
-    public TMP_Text player1ScoreText;
-    public TMP_Text player2ScoreText;
+   
+    private String lastScoringPlayerNickname;
     
     private Rigidbody2D rb;
-    private PhotonView pw;
+    private PhotonView pw, otherPV;
 
     private void Start()
     {
@@ -27,35 +26,38 @@ public class Ball : MonoBehaviour
     {
         rb.velocity = Vector2.zero;
         transform.position = startPos.position;
-        
-        ShowScore();
+       
     }
-    
-    public void ShowScore()
+
+    public void OnCollisionEnter2D(Collision2D other)
     {
-        player1ScoreText.text = PhotonNetwork.PlayerList[0].NickName + " : " + player1Score.ToString();
-        player2ScoreText.text = PhotonNetwork.PlayerList[1].NickName + " : " + player2Score.ToString();;
-    }
-    
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if(pw.IsMine)
+        if (pw.IsMine)
         {
-            if (other.CompareTag("Goal1"))
+            otherPV = other.gameObject.GetComponent<PhotonView>();
+            if (otherPV != null && otherPV.IsMine)
             {
-                player2Score++;
-                ShowScore();
-                pw.RPC("ResetBall", RpcTarget.All);
-            }
-            else if (other.CompareTag("Goal2"))
-            {
-                player1Score++;
-                ShowScore();
-                pw.RPC("ResetBall", RpcTarget.All);
+                lastScoringPlayerNickname = pw.Controller.NickName;
             }
         }
     }
     
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (pw.IsMine && other.CompareTag("Goal"))
+        {
+            if (otherPV != null)
+            {
+                Player scoringPlayer = otherPV.Owner;
+                if (scoringPlayer != null)
+                {
+                    lastScoringPlayerNickname = scoringPlayer.NickName;
+                    GameManager.instance.ShowScore(scoringPlayer, 1);
+                }
+            }
+            pw.RPC("ResetBall", RpcTarget.All);
+        }
+    }
+
     [PunRPC]
     public void ResetBall()
     {

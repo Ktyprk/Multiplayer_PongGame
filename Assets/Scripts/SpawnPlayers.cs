@@ -11,7 +11,8 @@ public class SpawnPlayers : MonoBehaviour
     private bool hasSpawned = false; 
 
     public string playerName;
-    private void Start()
+
+    void Start()
     {
         if (!hasSpawned)
         {
@@ -20,7 +21,8 @@ public class SpawnPlayers : MonoBehaviour
     }
     
     Transform spawnPoint;
-    private void SpawnPlayer()
+
+    void SpawnPlayer()
     {
         if (PhotonNetwork.IsMasterClient)
         {
