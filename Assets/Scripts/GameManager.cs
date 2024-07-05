@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviourPunCallbacks
@@ -9,17 +11,23 @@ public class GameManager : MonoBehaviourPunCallbacks
     public static GameManager instance;
     public TextMeshProUGUI playerNameTextPrefab;
     public TextMeshProUGUI playerScoreTextPrefab;
+    public TextMeshProUGUI ballCountdownText;
+    public TextMeshProUGUI gameCountdownText;
     public Transform playerNameDisplayParent;
     public Transform playerScoreDisplayParent;
+    public Ball ball; 
 
     private Dictionary<int, TextMeshProUGUI> playerNameTexts = new Dictionary<int, TextMeshProUGUI>();
     private Dictionary<int, TextMeshProUGUI> playerScoreTexts = new Dictionary<int, TextMeshProUGUI>();
     private Dictionary<string, int> playerScores = new Dictionary<string, int>();
+    
+    private bool gameStarted = false;
 
     void Awake()
     {
         instance = this;
     }
+
     void Start()
     {
         PhotonNetwork.AddCallbackTarget(this);
@@ -29,16 +37,22 @@ public class GameManager : MonoBehaviourPunCallbacks
             DisplayPlayerName(player);
             UpdateScoreForNewPlayer(player);
         }
+
+        CheckAndStartGame();
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         DisplayPlayerName(newPlayer);
+        UpdateScoreForNewPlayer(newPlayer);
+
+        CheckAndStartGame();
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         RemovePlayerName(otherPlayer);
+        // StopGame();
     }
 
     void DisplayPlayerName(Player player)
@@ -67,7 +81,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    
     public void ShowScore(Player player, int scoreToAdd)
     {
         string playerName = player.NickName;
@@ -91,7 +104,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             playerScoreTexts[actorNumber].text = $"Score: {newScore}";
         }
     }
-    
+
     private void UpdateScoreForNewPlayer(Player newPlayer)
     {
         string playerName = newPlayer.NickName;
@@ -101,6 +114,42 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+    void CheckAndStartGame()
+    {
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        {
+            photonView.RPC("StartGame", RpcTarget.All);
+        }
+    }
+
+    [PunRPC]
+    void StartGame()
+    {
+        ball.StartBall();
+    }
+
+    public void StartGameCountdown()
+    {
+        StartCoroutine(GameCountdownCoroutine());
+    }
+
+    private IEnumerator GameCountdownCoroutine()
+    {
+        gameCountdownText.gameObject.SetActive(true);
+        float countdown = 90f; // 1 minute and 30 seconds
+
+        while (countdown > 0)
+        {
+            TimeSpan time = TimeSpan.FromSeconds(countdown);
+            gameCountdownText.text = time.ToString(@"mm\:ss");
+            yield return new WaitForSeconds(1f);
+            countdown--;
+        }
+
+        gameCountdownText.text = "Game Over!";
+        yield return new WaitForSeconds(1f);
+        gameCountdownText.gameObject.SetActive(false);
+    }
 
     void OnDestroy()
     {
