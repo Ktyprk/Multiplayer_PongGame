@@ -11,6 +11,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     public TMP_InputField CreateInput;
     public TMP_InputField JoinInput;
     public TMP_InputField NicknameInput;
+    public TMP_Text PlayerNicknameText;
 
     public void CreateRoom()
     {
@@ -30,6 +31,8 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     public void SetNickname()
     {
         PhotonNetwork.NickName = NicknameInput.text;
+        
+        PlayerNicknameText.text = NicknameInput.text;
         PlayerPrefs.SetString("PlayerNickname", NicknameInput.text);
     }
 }

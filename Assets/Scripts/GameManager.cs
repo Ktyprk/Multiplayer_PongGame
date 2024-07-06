@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         playerNameTexts.Add(player.ActorNumber, playerNameTextInstance);
 
         TextMeshProUGUI playerScoreTextInstance = Instantiate(playerScoreTextPrefab, playerScoreDisplayParent);
-        playerScoreTextInstance.text = "Score: 0";
+        playerScoreTextInstance.text = "0";
         playerScoreTexts.Add(player.ActorNumber, playerScoreTextInstance);
     }
 
@@ -104,7 +104,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         if (playerScoreTexts.ContainsKey(actorNumber))
         {
-            playerScoreTexts[actorNumber].text = $"Score: {newScore}";
+            playerScoreTexts[actorNumber].text = $"{newScore}";
         }
     }
 
