@@ -16,12 +16,15 @@ public class GameManager : MonoBehaviourPunCallbacks
     public Transform playerNameDisplayParent;
     public Transform playerScoreDisplayParent;
     public Ball ball; 
+    public GameObject winScreen, loseScreen;
 
     private Dictionary<int, TextMeshProUGUI> playerNameTexts = new Dictionary<int, TextMeshProUGUI>();
     private Dictionary<int, TextMeshProUGUI> playerScoreTexts = new Dictionary<int, TextMeshProUGUI>();
     private Dictionary<string, int> playerScores = new Dictionary<string, int>();
     
     private bool gameStarted = false;
+    
+    [SerializeField] private float gameTime = 10f;
 
     void Awake()
     {
@@ -136,7 +139,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     private IEnumerator GameCountdownCoroutine()
     {
         gameCountdownText.gameObject.SetActive(true);
-        float countdown = 90f; // 1 minute and 30 seconds
+        float countdown = gameTime; 
 
         while (countdown > 0)
         {
@@ -149,6 +152,35 @@ public class GameManager : MonoBehaviourPunCallbacks
         gameCountdownText.text = "Game Over!";
         yield return new WaitForSeconds(1f);
         gameCountdownText.gameObject.SetActive(false);
+        
+        EndGame();
+    }
+    
+    private void EndGame()
+    {
+        Player localPlayer = PhotonNetwork.LocalPlayer;
+        string localPlayerName = localPlayer.NickName;
+        
+        int localPlayerScore = playerScores.ContainsKey(localPlayerName) ? playerScores[localPlayerName] : 0;
+        int opponentScore = 0;
+
+        foreach (var kvp in playerScores)
+        {
+            if (kvp.Key != localPlayerName)
+            {
+                opponentScore = kvp.Value;
+                break;
+            }
+        }
+
+        if (localPlayerScore > opponentScore)
+        {
+            winScreen.SetActive(true);
+        }
+        else
+        {
+            loseScreen.SetActive(true);
+        }
     }
 
     void OnDestroy()
